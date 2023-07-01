@@ -2,7 +2,8 @@ package com.elexlab.cybercontroller.pojo;
 
 public class CommandMessage {
     public static interface CommandType{
-        int TRANS = 1;
+        // trans用到了hms的包，这里用不了，全部删除
+//        int TRANS = 1;
         int LOCK = 2;
         int INPUT = 3;
         int KEY_EVENT = 4;

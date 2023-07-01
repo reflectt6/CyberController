@@ -12,39 +12,22 @@ import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.elexlab.cybercontroller.communication.BluetoothKeyboard;
 import com.elexlab.cybercontroller.communication.TcpClient;
 import com.elexlab.cybercontroller.pojo.CommandMessage;
 import com.elexlab.cybercontroller.pojo.ScriptMessage;
-import com.elexlab.cybercontroller.services.CommandAnalyzer;
-import com.elexlab.cybercontroller.services.FaceAnalyzer;
-import com.elexlab.cybercontroller.services.HideCamera;
-import com.elexlab.cybercontroller.services.SpeechRecognizer;
-import com.elexlab.cybercontroller.services.TextRecognizer;
-import com.elexlab.cybercontroller.services.Translator;
 import com.elexlab.cybercontroller.ui.activities.LoginActivity;
 import com.elexlab.cybercontroller.ui.widget.InfoBoxView;
-import com.elexlab.cybercontroller.ui.widget.SpeechRecordView;
 import com.elexlab.cybercontroller.ui.widget.TouchboardView;
 import com.elexlab.cybercontroller.ui.widget.TranslationView;
 import com.elexlab.cybercontroller.utils.AssetsUtils;
@@ -52,37 +35,18 @@ import com.elexlab.cybercontroller.utils.DeviceUtil;
 import com.elexlab.cybercontroller.utils.PermissionUtil;
 import com.elexlab.cybercontroller.utils.SharedPreferencesUtil;
 import com.google.gson.Gson;
-import com.hoho.android.usbserial.driver.UsbSerialDriver;
-import com.hoho.android.usbserial.driver.UsbSerialProber;
-import com.huawei.hmf.tasks.OnFailureListener;
-import com.huawei.hmf.tasks.OnSuccessListener;
-import com.huawei.hmf.tasks.Task;
-import com.huawei.hms.mlsdk.common.LensEngine;
-import com.huawei.hms.mlsdk.common.MLAnalyzer;
-import com.huawei.hms.mlsdk.common.MLFrame;
-import com.huawei.hms.mlsdk.gesture.MLGesture;
-import com.huawei.hms.mlsdk.gesture.MLGestureAnalyzer;
-import com.huawei.hms.mlsdk.gesture.MLGestureAnalyzerFactory;
-import com.huawei.hms.mlsdk.gesture.MLGestureAnalyzerSetting;
-import com.huawei.hms.mlsdk.handkeypoint.MLHandKeypointAnalyzer;
-import com.huawei.hms.mlsdk.handkeypoint.MLHandKeypointAnalyzerFactory;
-import com.huawei.hms.mlsdk.handkeypoint.MLHandKeypointAnalyzerSetting;
-import com.huawei.hms.mlsdk.handkeypoint.MLHandKeypoints;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends Activity {
     private final static String TAG = MainActivity.class.getSimpleName();
     private static TcpClient tcpClient = new TcpClient();
-    private Translator translator;
     private TranslationView tvTranslation;
     private InfoBoxView ivInfoBoxView;
-    private SpeechRecordView speechRecordView;
     private TouchboardView touchboardView;
     private BluetoothKeyboard bluetoothKeyboard;
     private Handler handler = new Handler();
@@ -97,19 +61,16 @@ public class MainActivity extends Activity {
         PermissionUtil.checkAndRequestPermissions(this,new String[]{Manifest.permission.CAMERA,Manifest.permission.RECORD_AUDIO});
 
         setContentView(R.layout.activity_main);
-        speechRecordView = findViewById(R.id.speechRecordView);
         tvTranslation = findViewById(R.id.tvTranslation);
         touchboardView = findViewById(R.id.touchboardView);
         ivInfoBoxView = findViewById(R.id.ivInfoBoxView);
         ivInfoBoxView.dismiss(0);
 
-        translator = new Translator();
-
         initSetting();
         initTcpClient();
-        initMicrophone();
         initTouchboard();
 
+        getApplicationContext();
     }
 
     private void setImage(Bitmap bitmap){
@@ -118,16 +79,22 @@ public class MainActivity extends Activity {
         ivPreview.setImageBitmap(bitmap);
     }
 
-    private void recognizeTextFormImg(Bitmap bitmap){
-        new TextRecognizer()
-                .setCallback((String text)->{
-                    translator.translate(text.toLowerCase(),(String result)->{
-                        onTranslateSuccess(text.toLowerCase(),result);
+    public void shutDown(View view) throws InterruptedException {
+        String script = AssetsUtils.loadCommandScripts(MainActivity.this,"shut_down.py");
+        ScriptMessage scriptMessage = new ScriptMessage();
+        scriptMessage.setScript(script);
+        String params = "";
+        scriptMessage.setParams(params);
+        tcpClient.send(new Gson().toJson(scriptMessage));
+//        System.out.println();
+    }
 
-                    });
-                })
-                .recognize(bitmap);
-       // handler.post(()->{setImage(bitmap);});
+    public void checkTcp(View view) throws InterruptedException {
+        if (tcpClient.connected) {
+            Toast.makeText(MainActivity.this,"已建立TCP连接",Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(MainActivity.this,"还未建立TCP连接",Toast.LENGTH_LONG).show();
+        }
     }
 
     private void initSetting(){
@@ -184,90 +151,24 @@ public class MainActivity extends Activity {
     }
 
 
-    private void initTcpClient(){
-        tcpClient.onReceive((int type, byte[] data)->{
-            if(type==2){
-                //andler.postDelayed(()->{setImage(data);},1000);
-                Bitmap bitmap = BitmapFactory.decodeByteArray(data,0,data.length);
-                recognizeTextFormImg(bitmap);
-                return;
-            }
-            Log.d("!isInLoginActivity",""+!isInLoginActivity());
-            String text = null;
-            try {
-                text = new String(data,"UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-                return;
-            }
-            Log.d(TAG,text);
-                CommandMessage commandMessage = new Gson().fromJson(text, CommandMessage.class);
-                if(commandMessage.getCommand() == CommandMessage.CommandType.TRANS){
-                    translator.translate(commandMessage.getMessage(), new OnSuccessListener<String>() {
-                        @Override
-                        public void onSuccess(String s) {
-                            Log.d("OnSuccessListener:",s);
-                            onTranslateSuccess(commandMessage.getMessage(),s);
-                        }
-                    });
-                }else if(commandMessage.getCommand() == CommandMessage.CommandType.LOCK && !isInLoginActivity()){
-                    LoginActivity.startMe(MainActivity.this,false);
+    private void initTcpClient() {
+        tcpClient.onReceive((int type, byte[] data) -> {
+                    Log.d("!isInLoginActivity", "" + !isInLoginActivity());
+                    String text = null;
+                    try {
+                        text = new String(data, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                    Log.d(TAG, text);
+                    CommandMessage commandMessage = new Gson().fromJson(text, CommandMessage.class);
+                    if (commandMessage.getCommand() == CommandMessage.CommandType.LOCK && !isInLoginActivity()) {
+                        LoginActivity.startMe(MainActivity.this, false);
+                    }
                 }
-            }
         );
 
-    }
-
-    private void initMicrophone(){
-        speechRecordView.setListener(new SpeechRecordView.SpeechListener() {
-            @Override
-            public void onRecognizingResults(int mode, String result) {
-                ivInfoBoxView.setInfo(result);
-            }
-
-            @Override
-            public void onResults(int mode, String result) {
-                ivInfoBoxView.setInfo(result);
-
-            }
-
-            @Override
-            public void onRecognizeStart(int mode) {
-                Log.d(TAG,"onRecognizeStart");
-
-                String title = "正在语音输入";
-                if(mode==2){
-                    title="正在语音命令";
-                }
-                ivInfoBoxView.setTitle(title);
-                ivInfoBoxView.setInfo("");
-                ivInfoBoxView.show(1000);
-            }
-
-            @Override
-            public void onRecognizeEnd(int mode, String result) {
-                Log.d(TAG,"onRecognizeEnd");
-                if(mode == 1){
-                    String script = AssetsUtils.loadCommandScripts(MainActivity.this,"text_input.py");
-                    ScriptMessage scriptMessage = new ScriptMessage();
-                    scriptMessage.setScript(script);
-                    scriptMessage.setParams(result);
-                    tcpClient.send(new Gson().toJson(scriptMessage));
-                }else if(mode == 2){
-                    List<ScriptMessage> scriptMessages = new CommandAnalyzer().analyzeCommand(result);
-                    for(ScriptMessage scriptMessage:scriptMessages){
-                        if(scriptMessage != null){
-                            tcpClient.send(new Gson().toJson(scriptMessage));
-                        }
-                    }
-
-                }
-
-
-
-                handler.postDelayed(()->{ivInfoBoxView.dismiss(1000);},1000);
-            }
-        });
     }
 
 

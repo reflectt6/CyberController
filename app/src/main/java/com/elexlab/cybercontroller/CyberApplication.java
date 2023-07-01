@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import com.elexlab.cybercontroller.communication.BluetoothClient;
-import com.huawei.hms.mlsdk.common.MLApplication;
 
 public class CyberApplication extends Application {
     private static Context context;
@@ -20,7 +19,7 @@ public class CyberApplication extends Application {
     public void onCreate() {
         super.onCreate();
         this.context = this;
-        MLApplication.getInstance().setApiKey("替换成你自己的ApiKey");
+//        MLApplication.getInstance().setApiKey("替换成你自己的ApiKey");
 
         BluetoothClient.bindContext(this);
 

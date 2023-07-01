@@ -3,8 +3,10 @@ package com.elexlab.cybercontroller.communication;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.elexlab.cybercontroller.CyberApplication;
+import com.elexlab.cybercontroller.MainActivity;
 import com.elexlab.cybercontroller.communication.tcp.PackageUtil;
 import com.elexlab.cybercontroller.utils.SharedPreferencesUtil;
 
@@ -33,7 +35,7 @@ public class TcpClient {
         void onReceive(int type, byte[] data);
     }
     private ReceiveListener receiveListener;
-    private String hostip = "192.168.3.28";
+    private String hostip = "192.168.31.215";
     private int port = 2233;
     private  Socket socketClient;
     private BufferedReader reader;
@@ -41,7 +43,10 @@ public class TcpClient {
     private Handler handler;
     private Thread receiveThread;
 
+    public boolean connected;
+
     public TcpClient(){
+        connected = false;
         HandlerThread tcpThread = new HandlerThread("tcpThread");
         tcpThread.start();
         handler = new Handler(tcpThread.getLooper());
@@ -49,6 +54,7 @@ public class TcpClient {
         port = SharedPreferencesUtil.getPreference(CyberApplication.getContext(),"settings","hostPort",port);
 
         tryConnect();
+
     }
 
     private void tryConnect(){
@@ -60,7 +66,7 @@ public class TcpClient {
                     break;
                 }
             }
-
+            connected = true;
         });
 
     }
@@ -70,7 +76,7 @@ public class TcpClient {
         try{
             socketClient = new Socket();
             SocketAddress socAddress = new InetSocketAddress(hostip, port);
-            socketClient.connect(socAddress,5000);
+            socketClient.connect(socAddress,5*1000);
             Log.i(TAG,"socket 连接成功");
             writer = new BufferedWriter(new OutputStreamWriter(socketClient.getOutputStream()));
 

@@ -8,7 +8,6 @@ import android.view.View;
 
 import com.elexlab.cybercontroller.R;
 import com.elexlab.cybercontroller.communication.BluetoothKeyboard;
-import com.elexlab.cybercontroller.services.Translator;
 import com.elexlab.cybercontroller.utils.PermissionUtil;
 
 public class TestActivity extends Activity {

@@ -7,81 +7,117 @@
     tools:context=".MainActivity">
 
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/mainBoard"
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <com.elexlab.cybercontroller.ui.widget.TouchboardView
             android:id="@+id/touchboardView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-<!--        <RelativeLayout-->
-<!--            android:id="@+id/rlMicrophone"-->
-<!--            android:layout_alignParentBottom="true"-->
-<!--            android:layout_centerHorizontal="true"-->
+        <!--        <RelativeLayout-->
+        <!--            android:id="@+id/rlMicrophone"-->
+        <!--            android:layout_alignParentBottom="true"-->
+        <!--            android:layout_centerHorizontal="true"-->
 
-<!--            android:layout_width="80dp"-->
-<!--            android:layout_height="80dp">-->
-<!--            <ImageView-->
-<!--                android:layout_marginBottom="10dp"-->
-<!--                android:src="@mipmap/ic_microphone"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent"/>-->
-<!--        </RelativeLayout>-->
-        <com.elexlab.cybercontroller.ui.widget.SpeechRecordView
-            android:visibility="visible"
-            android:id="@+id/speechRecordView"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
+        <!--            android:layout_width="80dp"-->
+        <!--            android:layout_height="80dp">-->
+        <!--            <ImageView-->
+        <!--                android:layout_marginBottom="10dp"-->
+        <!--                android:src="@mipmap/ic_microphone"-->
+        <!--                android:layout_width="match_parent"-->
+        <!--                android:layout_height="match_parent"/>-->
+        <!--        </RelativeLayout>-->
+        <!--        <com.elexlab.cybercontroller.ui.widget.SpeechRecordView-->
+        <!--            android:visibility="visible"-->
+        <!--            android:id="@+id/speechRecordView"-->
+        <!--            android:layout_alignParentBottom="true"-->
+        <!--            android:layout_centerHorizontal="true"-->
 
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"/>-->
         <RelativeLayout
             android:id="@+id/rlSettings"
-            android:padding="20dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerHorizontal="true"
             android:layout_width="80dp"
-            android:layout_height="80dp">
+            android:layout_height="80dp"
+            android:padding="20dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
             <ImageView
-                android:src="@drawable/ic_baseline_settings"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_baseline_settings" />
         </RelativeLayout>
 
         <com.elexlab.cybercontroller.ui.widget.InfoBoxView
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="10dp"
             android:id="@+id/ivInfoBoxView"
-            android:adjustViewBounds="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:adjustViewBounds="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
 
         <ImageView
             android:id="@+id/ivPreview"
             android:layout_width="480dp"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <RelativeLayout
             android:id="@+id/rlContainer"
-            android:padding="16dp"
-            android:background="#dd000000"
-            android:layout_centerInParent="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:background="#dd000000"
+            android:padding="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
             <com.elexlab.cybercontroller.ui.widget.TranslationView
                 android:id="@+id/tvTranslation"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
         </RelativeLayout>
 
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="84dp"
+            android:layout_marginTop="16dp"
+            android:onClick="shutDown"
+            android:padding="10dp"
+            android:text="关机"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="268dp"
+            android:onClick="checkTcp"
+            android:layout_marginTop="16dp"
+            android:text="检查连接"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
 
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
